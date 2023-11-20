@@ -15,8 +15,16 @@ app.use(cors());
 const server = createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-io.on("connection", (_socket) => {
+io.on("connection", (socket) => {
   console.log("a user has connected to the socket");
+
+  socket.on("chat message", (message) => {
+    io.emit("chat message", message);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user dessconnected");
+  });
 });
 
 server.listen(port, () => {
