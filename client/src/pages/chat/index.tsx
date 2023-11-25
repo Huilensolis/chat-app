@@ -1,35 +1,58 @@
-import React, { useMemo, useRef, useState } from "react";
-import { io } from "socket.io-client";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Socket, io } from "socket.io-client";
+
+interface CustomSocket extends Socket {
+  auth: {
+    serverOffset: number;
+  };
+}
 
 export function ChatPage() {
   const [inputValue, setInputValue] = useState<string>("");
   const [messages, setMessages] = useState<string[]>([]);
   const [isLoading, setIsloading] = useState<boolean>(false);
-  const socket = useMemo(() => {
-    return io("http://localhost:3000");
+
+  const socket = useMemo<CustomSocket>(() => {
+    const ioWithAuth = (
+      url: string,
+      opts?: Parameters<typeof io>[1] & { auth: { serverOffset: number } },
+    ) => {
+      return io(url, opts) as CustomSocket;
+    };
+    return ioWithAuth("http://localhost:3000", { auth: { serverOffset: 0 } });
   }, []);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  socket.on("chat message", (message) => {
-    setMessages([...messages, message]);
-  });
-
-  function sendMessage(e: React.FormEvent<HTMLFormElement>) {
-    console.log(inputValue);
+  async function sendMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (typeof inputValue !== "string") return;
     if (inputValue.length === 0) return;
 
     setIsloading(true);
+
     socket.emitWithAck("chat message", inputValue);
+
     setIsloading(false);
+
     if (inputRef.current) {
       inputRef.current.value = "";
       setInputValue("");
     }
   }
+  useEffect(() => {
+    function handleMessage(message: string, serverOffset: number) {
+      setMessages((prev) => [...prev, message]);
+      socket.auth.serverOffset = serverOffset;
+    }
+
+    socket.on("chat message", handleMessage);
+
+    return () => {
+      socket.off("chat message", handleMessage);
+    };
+  }, [socket]);
   return (
     <section className="flex flex-col justify-center items-center gap-4 h-full w-full border-2 overflow-hidden border-blue-500 max-w-xl rounded-xl ">
       <article className="w-full min-h-[500px] flex flex-col gap-2 p-2">
