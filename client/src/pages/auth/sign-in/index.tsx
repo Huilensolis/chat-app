@@ -1,4 +1,4 @@
-export function LogInPage() {
+export function SignInPage() {
   function handleLogIn() {}
 
   return (
@@ -8,10 +8,12 @@ export function LogInPage() {
         <input
           type="text"
           id="username"
-          className="p-2 border border-neutral-400 text-neutral-400 rounded-md"
+          className="p-2 border border-neutral-400 text-neutral-700 rounded-md"
         />
       </div>
-      <button className="bg-slate-300 p-2 rounded-md">Log In</button>
+      <button className="bg-blue-500 text-neutral-500 font-bold p-2 rounded-md">
+        Log In
+      </button>
     </form>
   );
 }

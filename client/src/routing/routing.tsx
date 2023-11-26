@@ -3,7 +3,8 @@ import { RootLayout } from "./root";
 import { ErrorPage } from "./error";
 import { ChatPage } from "../pages/chat";
 import { AuthLayout } from "../layouts/auth";
-import { LogInPage } from "../pages/log-in";
+import { SignInPage } from "../pages/auth/sign-in";
+import { SignUpPage } from "../pages/auth/sign-up";
 
 export const router = createBrowserRouter([
   {
@@ -24,8 +25,12 @@ export const router = createBrowserRouter([
         element: <AuthLayout />,
         children: [
           {
-            path: "/auth/login",
-            element: <LogInPage />,
+            path: "/auth/sign-in",
+            element: <SignInPage />,
+          },
+          {
+            path: "/auth/sign-up",
+            element: <SignUpPage />,
           },
         ],
       },
