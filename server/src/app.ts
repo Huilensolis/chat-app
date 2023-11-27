@@ -10,6 +10,7 @@ const port = process.env.PORT || 3000;
 dotenv.config();
 
 const app = express();
+app.use(express.json());
 app.use(logger("dev"));
 app.use(cors());
 
@@ -23,8 +24,13 @@ const db = createClient({
 
 (async () => {
   await db.execute("DROP TABLE IF EXISTS messages");
+  await db.execute("DROP TABLE IF EXISTS users");
+
   await db.execute(
     "CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT)",
+  );
+  await db.execute(
+    "CREATE TABLE IF NOT EXISTS users (username TEXT PRIMARY KEY)",
   );
   server.listen(port, () => {
     console.log("server running on port: " + port);
@@ -65,5 +71,49 @@ io.on("connection", async (socket) => {
     } catch (error) {
       console.log("error: " + error);
     }
+  }
+});
+
+app.get("/user/:username", async (req, res) => {
+  const { username } = req.params;
+
+  if (!username)
+    return res.status(400).json({ error: "username is required" }).end();
+
+  try {
+    const result = await db.execute({
+      sql: "SELECT username FROM users WHERE username = :username",
+      args: { username: username },
+    });
+
+    if (!(result.rows.length === 0)) {
+      return res.status(400).json("username taken").end();
+    }
+
+    return res.status(200).json("username available").end();
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json("username unavailable").end();
+  }
+});
+
+app.post("/user/:username", async (req, res) => {
+  const { username } = req.params;
+  if (!username) {
+    return res.status(400).json({ error: "username is required" }).end();
+  }
+
+  try {
+    await db.execute({
+      sql: "INSERT INTO USERS (username) VALUES (:username)",
+      args: { username: username },
+    });
+    return res
+      .status(201)
+      .json({ data: { user: username } })
+      .end();
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ error: "there has been an error" }).end();
   }
 });
