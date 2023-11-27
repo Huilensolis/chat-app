@@ -84,29 +84,31 @@ export function SignUpPage() {
   }
 
   return (
-    <form onSubmit={handleSignUp} className="flex flex-col gap-5">
-      <div className="flex flex-col">
-        <label htmlFor="username">Username</label>
-        <input
-          type="text"
-          id="username"
-          className="p-2 border border-neutral-400 text-neutral-700 rounded-md disabled:bg-gray-400"
-          onChange={(e) => setUsername(e.target.value)}
-          onFocus={() => setUsernameInputHasBeenTouched(true)}
-          disabled={isInputDisabled}
-        />
-        {!isUsernameValid.isValid && hasUsernameInputBeenTouched && (
-          <span className="text-red-500">
-            {isUsernameValid.message ?? "username not valid"}
-          </span>
-        )}
-      </div>
-      <button
-        className="bg-blue-500 text-neutral-50 font-bold p-2 rounded-md disabled:bg-gray-400"
-        disabled={isButtonDisabled}
-      >
-        Sign Up
-      </button>
-    </form>
+    <div className="flex flex-col justify-center items-center h-full">
+      <form onSubmit={handleSignUp} className="flex flex-col gap-5">
+        <div className="flex flex-col">
+          <label htmlFor="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            className="p-2 border border-neutral-400 text-neutral-700 rounded-md disabled:bg-gray-400"
+            onChange={(e) => setUsername(e.target.value)}
+            onFocus={() => setUsernameInputHasBeenTouched(true)}
+            disabled={isInputDisabled}
+          />
+          {!isUsernameValid.isValid && hasUsernameInputBeenTouched && (
+            <span className="text-red-500">
+              {isUsernameValid.message ?? "username not valid"}
+            </span>
+          )}
+        </div>
+        <button
+          className="bg-blue-500 text-neutral-50 font-bold p-2 rounded-md disabled:bg-gray-400"
+          disabled={isButtonDisabled}
+        >
+          Sign Up
+        </button>
+      </form>
+    </div>
   );
 }

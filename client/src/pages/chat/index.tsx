@@ -15,7 +15,7 @@ export function ChatPage() {
   const socket = useMemo<CustomSocket>(() => {
     const ioWithAuth = (
       url: string,
-      opts?: Parameters<typeof io>[1] & { auth: { serverOffset: number } },
+      opts?: Parameters<typeof io>[1] & { auth: { serverOffset: number } }
     ) => {
       return io(url, opts) as CustomSocket;
     };
