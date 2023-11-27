@@ -6,6 +6,18 @@ import { AuthLayout } from "../layouts/auth";
 import { SignInPage } from "../pages/auth/sign-in";
 import { SignUpPage } from "../pages/auth/sign-up";
 import { AppLayout } from "../layouts/app";
+import { ReactNode } from "react";
+import { useUser } from "../hooks/use-user";
+
+// eslint-disable-next-line react-refresh/only-export-components
+function CheckAuth({ children }: { children: ReactNode }) {
+  const { isUserLoggedIn } = useUser();
+  if (isUserLoggedIn) {
+    return <Navigate to="/app/chat" />;
+  }
+
+  return children;
+}
 
 export const router = createBrowserRouter([
   {
@@ -27,10 +39,13 @@ export const router = createBrowserRouter([
           },
         ],
       },
-
       {
         path: "/auth",
-        element: <AuthLayout />,
+        element: (
+          <CheckAuth>
+            <AuthLayout />
+          </CheckAuth>
+        ),
         children: [
           {
             path: "/auth/sign-in",

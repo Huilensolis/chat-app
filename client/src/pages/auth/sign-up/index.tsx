@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../../../hooks/use-user";
 
 export function SignUpPage() {
   const [username, setUsername] = useState("");
@@ -13,6 +14,8 @@ export function SignUpPage() {
   const [isInputDisabled, setIsInputDisabled] = useState<boolean>(false);
 
   const navigate = useNavigate();
+
+  const { logIn } = useUser();
 
   useEffect(() => {
     async function checkIfUsernameIsValid(username: string) {
@@ -29,31 +32,34 @@ export function SignUpPage() {
           });
         }
       } catch (error) {
+        console.log(error);
         setIsUsernameValid({
           isValid: false,
           message:
-            "Username there is been an error trying to check the username availability",
+            "There has been an error trying to check the username availability",
         });
       }
     }
 
-    if (
-      hasUsernameInputBeenTouched &&
-      username.length > 0 &&
-      typeof username === "string"
-    ) {
-      checkIfUsernameIsValid(username);
-    }
-
     if (typeof username !== "string" && hasUsernameInputBeenTouched) {
-      setIsUsernameValid({
+      return setIsUsernameValid({
         isValid: false,
         message: "Area cant be numeric types",
       });
     }
 
     if (username.length === 0 && hasUsernameInputBeenTouched) {
-      setIsUsernameValid({ isValid: false, message: "Area cant be empty" });
+      return setIsUsernameValid({
+        isValid: false,
+        message: "Area cant be empty",
+      });
+    }
+    if (
+      hasUsernameInputBeenTouched &&
+      username.length > 0 &&
+      typeof username === "string"
+    ) {
+      checkIfUsernameIsValid(username);
     }
   }, [username, hasUsernameInputBeenTouched]);
 
@@ -73,7 +79,7 @@ export function SignUpPage() {
           message: "Something went wrong",
         });
       }
-
+      logIn({ username });
       navigate("/app/chat");
     } catch (error) {
       console.log(error);

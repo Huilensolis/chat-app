@@ -1,7 +1,12 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Navigate, Outlet, useLocation } from "react-router-dom";
 
 export function AuthLayout() {
   const currentPath = useLocation().pathname;
+
+  if (currentPath === "/auth") {
+    return <Navigate to="/auth/sign-in" />;
+  }
+
   return (
     <div className="grid grid-cols-2 grid-rows-1 h-screen w-full">
       <section className="h-full w-full flex flex-col justify-center items-start">
@@ -14,7 +19,7 @@ export function AuthLayout() {
             }
             className="text-blue-500 rounded-md p-2 flex items-center justify-center font-bold"
           >
-            {currentPath === "/auth/sign-in" ? "Sign In" : "Sign Up"}
+            {currentPath === "/auth/sign-in" ? "Sign Up" : "Sign In"}
           </Link>
         </header>
         <div className="h-full w-full">
