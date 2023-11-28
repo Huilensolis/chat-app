@@ -18,7 +18,14 @@ function CheckAuth({ children }: { children: ReactNode }) {
 
   return children;
 }
+function ProtectRouteFromUnAuth({ children }: { children: ReactNode }) {
+  const { isUserLoggedIn, user } = useUser();
 
+  if (!isUserLoggedIn || !user) {
+    return <Navigate to="/auth/sign-in" />;
+  }
+  return children;
+}
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -31,7 +38,11 @@ export const router = createBrowserRouter([
       },
       {
         path: "/app",
-        element: <AppLayout />,
+        element: (
+          <ProtectRouteFromUnAuth>
+            <AppLayout />
+          </ProtectRouteFromUnAuth>
+        ),
         children: [
           {
             path: "/app/chat",
