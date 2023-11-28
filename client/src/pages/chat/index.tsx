@@ -15,7 +15,8 @@ export function ChatPage() {
     [],
   );
   const [isLoading, setIsloading] = useState<boolean>(false);
-
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [chatMembers, setChatMembers] = useState<Set<string>>(new Set());
   const { user, isUserLoggedIn } = useUser();
 
   const socket = useMemo<CustomSocket>(() => {
@@ -58,9 +59,21 @@ export function ChatPage() {
       socket.auth.serverOffset = serverOffset;
     }
 
+    function handleDissconnect() {
+      setIsConnected(false);
+    }
+
+    function handleConnect() {
+      setIsConnected(true);
+    }
+
     socket.on("chat message", handleMessage);
+    socket.on("disconnect", handleDissconnect);
+    socket.on("connect", handleConnect);
 
     return () => {
+      socket.off("disconnect", handleDissconnect);
+      socket.off("connect", handleConnect);
       socket.off("chat message", handleMessage);
     };
   }, [socket]);
@@ -74,10 +87,39 @@ export function ChatPage() {
     }
   }, [messages, user]);
 
+  useEffect(() => {
+    const members = new Set<string>();
+    for (const message of messages) {
+      const user = message.user;
+
+      if (user) {
+        members.add(user);
+      }
+    }
+    setChatMembers(members);
+  }, [messages]);
+
   return (
-    <section className="flex flex-col justify-center items-center gap-4 h-full max-w-5xl w-full border-2 overflow-hidden border-blue-500 rounded-xl ">
+    <section className="flex flex-col justify-center items-center gap-4 h-full max-w-5xl w-full overflow-hidden bg-neutral-800 rounded-xl">
+      <header className="w-full p-2 flex items-end gap-4">
+        <ul className="flex">
+          {Array.from(chatMembers)
+            .slice(0, 6)
+            .map((user: string) => (
+              <li
+                key={user}
+                className="flex items-center justify-center bg-neutral-700 rounded-full w-12 h-12"
+              >
+                <p className="text-neutral-400">{user.split("")[0]}</p>
+              </li>
+            ))}
+        </ul>
+        <p className="text-neutral-400">
+          {Array.from(chatMembers).length} members
+        </p>
+      </header>
       <div
-        className="w-full h-96 flex flex-col gap-2 p-2 overflow-auto"
+        className="w-full h-full flex flex-col gap-2 p-2 overflow-auto"
         ref={messagesRef}
       >
         {messages.length >= 1 &&
@@ -88,38 +130,38 @@ export function ChatPage() {
                 message.user === user ? "items-end" : "items-start"
               }`}
             >
-              <p
-                key={index}
-                className={`p-2 text-neutral-50 ${
+              <div
+                className={`py-2 px-4 flex flex-col ${
                   message.user !== user
-                    ? "rounded-[0_20px_20px_20px] bg-green-500"
+                    ? "rounded-[0_20px_20px_20px] bg-neutral-700"
                     : "rounded-[20px_0_20px_20px] bg-blue-500"
-                } w-max`}
+                } w-max max-w-[90%]`}
               >
-                {message.message}
-              </p>
-              {message.user !== user && (
-                <span className="text-sm text-neutral-500 px-2">
-                  {message.user}
-                </span>
-              )}
+                <span className="text-sm text-neutral-50">{message.user}</span>
+                <p className="text-lg text-neutral-50">{message.message}</p>
+              </div>
             </div>
           ))}
       </div>
       <form
-        className="flex justify-center items-center w-full bg-neutral-400"
+        className="flex justify-center items-center w-full relative"
         onSubmit={sendMessage}
       >
+        {!isConnected && (
+          <span className="absolute -top-12 py-2 px-4 bg-neutral-700 rounded-xl text-neutral-50">
+            you are offline
+          </span>
+        )}
         <input
           type="text"
-          placeholder="message"
-          className="w-full p-2 bg-neutral-200 border-neutral-400 rounded-sm placeholder:text-neutral-400"
+          placeholder="your message"
+          className="w-full p-4 bg-neutral-800 border-neutral-400 rounded-[0_0_0_0.75rem] placeholder:text-neutral-400 text-neutral-50 border-2 border-transparent focus:border-neutral-400 focus:outline-none"
           onChange={(e) => setInputValue(e.target.value)}
           ref={inputRef}
           autoFocus
         />
         <button
-          className="bg-blue-500 rounded-sm p-2 disabled:grayscale"
+          className="bg-blue-500 text-neutral-50 py-2 px-6 disabled:grayscale h-full"
           type="submit"
           disabled={isLoading}
         >
